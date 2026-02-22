@@ -1,5 +1,7 @@
-import React from 'react';
-import { ShieldAlert, ShieldCheck, TrendingDown, TrendingUp, Minus } from 'lucide-react';
+'use client';
+
+import React, { useState } from 'react';
+import { ShieldAlert, ShieldCheck, TrendingDown, TrendingUp, Minus, ChevronDown, ChevronUp } from 'lucide-react';
 
 interface NewsCardProps {
     title: string;
@@ -8,6 +10,7 @@ interface NewsCardProps {
     sentiment: 'positive' | 'negative' | 'neutral';
     is_fake: boolean;
     credibility_score: number;
+    ai_reasoning?: string;
     published_at: string;
 }
 
@@ -18,8 +21,10 @@ export default function NewsCard({
     sentiment,
     is_fake,
     credibility_score,
+    ai_reasoning,
     published_at,
 }: NewsCardProps) {
+    const [isExpanded, setIsExpanded] = useState(false);
 
     // Visual cues based on ML analysis
     const isSuspicious = is_fake || credibility_score < 0.6;
@@ -55,6 +60,24 @@ export default function NewsCard({
 
             <h3 className="text-xl font-bold text-gray-900 mb-2 line-clamp-2">{title}</h3>
             <p className="text-gray-600 text-sm mb-4 line-clamp-3">{summary}</p>
+
+            {ai_reasoning && (
+                <div className="mb-4">
+                    <button
+                        onClick={() => setIsExpanded(!isExpanded)}
+                        className="flex items-center gap-1 text-xs font-semibold text-indigo-600 hover:text-indigo-800 transition-colors"
+                    >
+                        {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                        {isExpanded ? "Hide AI Reasoning" : "View AI Reasoning"}
+                    </button>
+                    {isExpanded && (
+                        <div className="mt-2 p-3 bg-white/80 rounded-lg text-sm text-gray-700 border border-indigo-100 shadow-inner">
+                            <strong className="block mb-1 text-indigo-900">Why was this score given?</strong>
+                            {ai_reasoning}
+                        </div>
+                    )}
+                </div>
+            )}
 
             <div className="flex justify-between items-center text-xs text-gray-400">
                 <span>{new Date(published_at).toLocaleDateString()}</span>

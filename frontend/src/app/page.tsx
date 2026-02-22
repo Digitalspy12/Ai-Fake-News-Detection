@@ -34,7 +34,7 @@ export default async function Home() {
   const { data: articles, error } = await supabase
     .from('articles')
     .select('*')
-    .order('published_at', { ascending: false })
+    .order('created_at', { ascending: false })
     .limit(50);
 
   if (error) {
@@ -92,6 +92,7 @@ export default async function Home() {
                   sentiment={article.sentiment || 'neutral'}
                   is_fake={article.is_fake || false}
                   credibility_score={article.credibility_score || 0.5}
+                  ai_reasoning={article.ai_reasoning}
                   published_at={article.published_at}
                 />
               ))}

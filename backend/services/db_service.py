@@ -1,5 +1,6 @@
 from typing import List, Dict
 from db.supabase import get_supabase_client
+from services.ai_service import analyze_article_text
 import logging
 
 logger = logging.getLogger(__name__)
@@ -15,12 +16,18 @@ def store_articles_in_db(articles: List[Dict]):
     
     for article in articles:
         try:
+            # Call AI pipeline
+            ai_data = analyze_article_text(article["content_summary"])
+            
             # Upsert logic can be implemented if unique constraints are setup
             data, count = client.table("articles").insert({
                 "title": article["title"],
                 "source_domain": article["source_domain"],
                 "content_summary": article["content_summary"],
-                # sentiment, is_fake, credibility_score will be updated by AI pipeline
+                "sentiment": ai_data["sentiment"],
+                "is_fake": ai_data["is_fake"],
+                "credibility_score": ai_data["credibility_score"],
+                "ai_reasoning": ai_data.get("ai_reasoning", "")
             }).execute()
             inserted_count += 1
         except Exception as e:

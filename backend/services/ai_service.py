@@ -41,7 +41,8 @@ def analyze_article_text(text: str) -> Dict[str, Any]:
     result = {
         "sentiment": "neutral",
         "is_fake": False,
-        "credibility_score": 0.5
+        "credibility_score": 0.5,
+        "ai_reasoning": "Analysis failed or text too short to process."
     }
 
     # Process fake news prediction
@@ -82,6 +83,26 @@ def analyze_article_text(text: str) -> Dict[str, Any]:
                     result["sentiment"] = "neutral"
         except Exception as e:
             logger.error(f"Sentiment pipeline error: {e}")
+
+    # Generate reasoning text
+    reason_parts = []
+    
+    # Credibility reasoning
+    score_pct = int(result["credibility_score"] * 100)
+    if result["is_fake"]:
+        reason_parts.append(f"The text classification model detected patterns typical of unreliable or sensationalized sources with {score_pct}% confidence. It may contain misleading information.")
+    else:
+        reason_parts.append(f"The article passed credibility checks with {score_pct}% confidence, indicating standard journalistic language.")
+        
+    # Sentiment reasoning
+    if result["sentiment"] == "positive":
+        reason_parts.append("The overall tone of the text expresses positive or optimistic sentiment.")
+    elif result["sentiment"] == "negative":
+        reason_parts.append("The phrasing contains negative, critical, or pessimistic emotional undertones.")
+    else:
+        reason_parts.append("The language used is generally neutral and objective, devoid of strong emotional framing.")
+        
+    result["ai_reasoning"] = " ".join(reason_parts)
 
     return result
 

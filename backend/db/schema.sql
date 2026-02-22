@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS articles (
   sentiment text, -- 'positive', 'negative', 'neutral'
   is_fake boolean,
   credibility_score real,
+  ai_reasoning text,
   published_at timestamp with time zone,
   created_at timestamp with time zone DEFAULT now()
 );
