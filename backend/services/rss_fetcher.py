@@ -51,11 +51,13 @@ def fetch_articles() -> List[Dict]:
                     content = clean_summary if clean_summary else title
                     
                     published_at = entry.get('published', '')
+                    source_url = entry.get('link', '')
                     
                     if title and content:
                         articles.append({
                             "title": title,
                             "source_domain": source_domain,
+                            "source_url": source_url,
                             "content_summary": content,
                             "category": category,
                             "published_at": published_at

@@ -78,6 +78,7 @@ export default function InfiniteFeed({ initialArticles, searchQuery = '', catego
                         key={article.id}
                         title={article.title}
                         source_domain={article.source_domain || new URL(article.source_url || 'https://unknown.com').hostname || 'Unknown'}
+                        source_url={article.source_url}
                         summary={article.content_summary}
                         sentiment={article.sentiment || 'neutral'}
                         is_fake={article.is_fake || false}

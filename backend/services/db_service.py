@@ -29,6 +29,7 @@ def store_articles_in_db(articles: List[Dict]):
             data, count = client.table("articles").insert({
                 "title": article["title"],
                 "source_domain": article["source_domain"],
+                "source_url": article.get("source_url", ""),
                 "content_summary": article["content_summary"],
                 "sentiment": ai_data["sentiment"],
                 "is_fake": ai_data["is_fake"],
