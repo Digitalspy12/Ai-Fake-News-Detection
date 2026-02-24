@@ -27,6 +27,7 @@ def store_articles_in_db(articles: List[Dict]):
                 "sentiment": ai_data["sentiment"],
                 "is_fake": ai_data["is_fake"],
                 "credibility_score": ai_data["credibility_score"],
+                "category": article.get("category", "general"),
                 "ai_reasoning": ai_data.get("ai_reasoning", "")
             }).execute()
             inserted_count += 1

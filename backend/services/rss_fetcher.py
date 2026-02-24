@@ -2,12 +2,29 @@ import feedparser
 from bs4 import BeautifulSoup
 from typing import List, Dict
 
-# Example free sources that provide RSS feeds
+# Grouped by category
 RSS_SOURCES = {
-    "BBC": "http://feeds.bbci.co.uk/news/rss.xml",
-    "CNN": "http://rss.cnn.com/rss/edition_world.rss",
-    "AlJazeera": "http://www.aljazeera.com/xml/rss/all.xml",
-    "Yahoo": "https://news.yahoo.com/rss/"
+    "sports": {
+        "BBC Sport": "http://feeds.bbci.co.uk/sport/rss.xml",
+        "Yahoo Sports": "https://sports.yahoo.com/rss/"
+    },
+    "politics": {
+        "CNN Politics": "http://rss.cnn.com/rss/cnn_allpolitics.rss",
+        "BBC Politics": "http://feeds.bbci.co.uk/news/politics/rss.xml"
+    },
+    "business": {
+        "Yahoo Finance": "https://finance.yahoo.com/news/rss",
+        "BBC Business": "http://feeds.bbci.co.uk/news/business/rss.xml"
+    },
+    "technology": {
+        "CNN Tech": "http://rss.cnn.com/rss/cnn_tech.rss",
+        "BBC Technology": "http://feeds.bbci.co.uk/news/technology/rss.xml"
+    },
+    "general": {
+        "BBC": "http://feeds.bbci.co.uk/news/rss.xml",
+        "CNN": "http://rss.cnn.com/rss/edition_world.rss",
+        "AlJazeera": "http://www.aljazeera.com/xml/rss/all.xml"
+    }
 }
 
 def clean_html(raw_html: str) -> str:
@@ -21,28 +38,30 @@ def fetch_articles() -> List[Dict]:
     """Fetches articles from configured RSS sources and standardizes them."""
     articles = []
     
-    for source_domain, feed_url in RSS_SOURCES.items():
-        try:
-            feed = feedparser.parse(feed_url)
-            for entry in feed.entries[:10]:  # Limit to top 10 per source for now
-                title = entry.get('title', '')
-                raw_summary = entry.get('summary', '')
-                clean_summary = clean_html(raw_summary)
-                
-                # Sometime summary is empty or too short. We fall back to title if needed
-                content = clean_summary if clean_summary else title
-                
-                published_at = entry.get('published', '')
-                
-                if title and content:
-                    articles.append({
-                        "title": title,
-                        "source_domain": source_domain,
-                        "content_summary": content,
-                        "published_at": published_at
-                    })
-        except Exception as e:
-            print(f"Error fetching from {source_domain}: {e}")
+    for category, sources in RSS_SOURCES.items():
+        for source_domain, feed_url in sources.items():
+            try:
+                feed = feedparser.parse(feed_url)
+                for entry in feed.entries[:8]:  # Limit to top 8 per source for now
+                    title = entry.get('title', '')
+                    raw_summary = entry.get('summary', '')
+                    clean_summary = clean_html(raw_summary)
+                    
+                    # Sometime summary is empty or too short. We fall back to title if needed
+                    content = clean_summary if clean_summary else title
+                    
+                    published_at = entry.get('published', '')
+                    
+                    if title and content:
+                        articles.append({
+                            "title": title,
+                            "source_domain": source_domain,
+                            "content_summary": content,
+                            "category": category,
+                            "published_at": published_at
+                        })
+            except Exception as e:
+                print(f"Error fetching from {source_domain}: {e}")
             
     return articles
 

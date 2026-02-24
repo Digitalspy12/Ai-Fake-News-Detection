@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import NewsCard from '@/components/ui/NewsCard';
 import DashboardAnalytics from '@/components/dashboard/DashboardAnalytics';
+import SearchAndFilter from '@/components/ui/SearchAndFilter';
 import { supabase } from '@/lib/supabase';
 
 // Helper to deduce overall stats
@@ -24,18 +25,36 @@ function calculateAnalytics(articles: any[]) {
   return stats;
 }
 
-export const revalidate = 60; // Revalidate cache every minute
+export const dynamic = 'force-dynamic';
 
-export default async function Home() {
+export default async function Home(props: {
+  searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
+
+  const searchParams = await props.searchParams || {};
+  const query = typeof searchParams.q === 'string' ? searchParams.q : '';
+  const category = typeof searchParams.category === 'string' ? searchParams.category : '';
 
   // Fetch from supabase 
   // In a robust application we would use the Next.js API route or RLS 
   // For now using the simple browser client server-side works as a read-only fetch
-  const { data: articles, error } = await supabase
+
+  let supabaseQuery = supabase
     .from('articles')
     .select('*')
     .order('created_at', { ascending: false })
     .limit(50);
+
+  if (query) {
+    // Search in title or content
+    supabaseQuery = supabaseQuery.or(`title.ilike.%${query}%,content_summary.ilike.%${query}%`);
+  }
+
+  if (category && category.toLowerCase() !== 'all') {
+    supabaseQuery = supabaseQuery.eq('category', category.toLowerCase());
+  }
+
+  const { data: articles, error } = await supabaseQuery;
 
   if (error) {
     console.error("DB Fetch Error:", error.message);
@@ -61,6 +80,10 @@ export default async function Home() {
             We filter the noise so you read the truth.
           </p>
         </header>
+
+        <Suspense fallback={<div className="h-20 mb-8 mt-[-3rem] z-20 relative bg-white rounded-2xl shadow-sm border border-gray-100 animate-pulse"></div>}>
+          <SearchAndFilter />
+        </Suspense>
 
         {/* Analytics Section */}
         {safeArticles.length > 0 && (
