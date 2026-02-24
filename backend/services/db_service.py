@@ -16,6 +16,12 @@ def store_articles_in_db(articles: List[Dict]):
     
     for article in articles:
         try:
+            # Check if article already exists by title
+            check = client.table("articles").select("id").eq("title", article["title"]).limit(1).execute()
+            if check.data and len(check.data) > 0:
+                logger.info(f"Article already exists, skipping: {article['title']}")
+                continue
+
             # Call AI pipeline
             ai_data = analyze_article_text(article["content_summary"])
             

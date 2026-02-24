@@ -1,7 +1,7 @@
 import React, { Suspense } from 'react';
-import NewsCard from '@/components/ui/NewsCard';
 import DashboardAnalytics from '@/components/dashboard/DashboardAnalytics';
 import SearchAndFilter from '@/components/ui/SearchAndFilter';
+import InfiniteFeed from '@/components/ui/InfiniteFeed';
 import { supabase } from '@/lib/supabase';
 
 // Helper to deduce overall stats
@@ -91,35 +91,18 @@ export default async function Home(props: {
         )}
 
         {/* Feed Section */}
-        <div className="mt-8">
-          <div className="flex items-center justify-between mb-8">
-            <h2 className="text-2xl font-bold mb-6 text-gray-900 border-l-4 border-indigo-600 pl-4">Latest Feed</h2>
-            <span className="text-sm font-medium bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full">
-              {safeArticles.length} Articles
-            </span>
-          </div>
-
+        <div className="mt-8 relative z-20">
           {safeArticles.length === 0 ? (
             <div className="bg-white p-12 text-center rounded-2xl shadow-sm border border-gray-100">
               <h3 className="text-xl font-medium text-gray-600 mb-2">No articles found in database</h3>
               <p className="text-gray-400">Please run the Python backend pipeline to fetch news.</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {safeArticles.map((article: any) => (
-                <NewsCard
-                  key={article.id}
-                  title={article.title}
-                  source_domain={article.source_domain || new URL(article.source_url || 'https://unknown.com').hostname}
-                  summary={article.content_summary}
-                  sentiment={article.sentiment || 'neutral'}
-                  is_fake={article.is_fake || false}
-                  credibility_score={article.credibility_score || 0.5}
-                  ai_reasoning={article.ai_reasoning}
-                  published_at={article.published_at}
-                />
-              ))}
-            </div>
+            <InfiniteFeed
+              initialArticles={safeArticles}
+              searchQuery={query}
+              category={category}
+            />
           )}
         </div>
       </div>

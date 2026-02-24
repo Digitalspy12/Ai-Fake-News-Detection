@@ -4,10 +4,12 @@ An intelligent, full-stack application that curates real-time news from multiple
 
 ## 🌟 Features
 
-- **Automated Data Pipeline**: A robust Python background scheduler fetches real-time articles every 30 minutes from trusted RSS feeds (BBC, CNN, Al Jazeera, etc.).
+- **Automated Data Pipeline**: A robust Python background scheduler fetches real-time articles every 30 minutes from trusted RSS feeds (BBC, CNN, Al Jazeera, etc.) grouped by categories like Sports, Politics, and Tech.
+- **Smart Deduplication**: The backend checks Supabase before inserting so duplicate articles are ignored, keeping your feed pristine.
 - **Local AI Processing**: Uses Hugging Face Transformers (`mrm8488/bert-tiny-finetuned-fake-news-detection`) running locally on CPU.
 - **Sentiment & Fake News Detection**: Evaluates truthfulness and classifies text as Positive, Negative, or Neutral. 
 - **Analytics Dashboard**: Next.js frontend integrated with Recharts provides a clear split of "Verified" vs "Suspicious" articles and macro-level sentiment breakdowns.
+- **Dynamic Search & Infinite Feed**: Next.js client-side UI with category filtering, live search queries, and lazy-loading "Load More" functionality.
 - **Modular & Component-Driven architecture**: Clear separation of React UI (Frontend) and FastAPI Python Services (Backend).
 
 ## 🛠️ Tech Stack
@@ -36,11 +38,13 @@ CREATE TABLE articles (
   sentiment text, -- 'positive', 'negative', 'neutral'
   is_fake boolean,
   credibility_score real,
+  category text DEFAULT 'general',
+  ai_reasoning text,
   published_at timestamp with time zone,
   created_at timestamp with time zone DEFAULT now()
 );
 
--- Optional trigger for updating `created_at` or enforcing unique rules on URLs
+-- Note: the title should ideally have a unique constraint, or the backend script handles deduplication programmatically.
 ```
 
 4. Go to **Project Settings -> API** to get your `URL` and `anon key`.
@@ -121,9 +125,10 @@ npm run test
 ```
 
 ## Architecture Details
-*   **RSS Fetcher**: Found in `backend/services/rss_fetcher.py`. Fetches standard generic news snippets from free global feeds.
+*   **RSS Fetcher**: Found in `backend/services/rss_fetcher.py`. Fetches categorized news snippets from free global feeds.
 *   **AI Service**: Found in `backend/services/ai_service.py`. Loads pipelines dynamically into RAM upon server initialization.
-*   **Next.js Feed**: Rendered statically on the server (`page.tsx`) mapping cached data to reduce DB load, re-fetched seamlessly.
+*   **DB Service**: Handles checking via Supabase `select` limits to filter duplicate article titles before inserting payload data.
+*   **Next.js Dynamic API**: Pagination and search query string processing handled seamlessly by Next.js API Routes at `/api/articles` to allow for Infinite Feed scrolling without database overload.
 
 ## License
 MIT
