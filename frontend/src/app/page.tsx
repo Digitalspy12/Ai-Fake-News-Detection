@@ -4,7 +4,6 @@ import SearchAndFilter from '@/components/ui/SearchAndFilter';
 import InfiniteFeed from '@/components/ui/InfiniteFeed';
 import { supabase } from '@/lib/supabase';
 
-// Helper to deduce overall stats
 function calculateAnalytics(articles: any[]) {
   const stats = {
     sentiment: { positive: 0, neutral: 0, negative: 0 },
@@ -12,12 +11,10 @@ function calculateAnalytics(articles: any[]) {
   };
 
   articles.forEach(a => {
-    // Sentiment
     if (a.sentiment === 'positive') stats.sentiment.positive++;
     else if (a.sentiment === 'negative') stats.sentiment.negative++;
     else stats.sentiment.neutral++;
 
-    // Credibility
     if (a.is_fake || a.credibility_score < 0.6) stats.credibility.suspicious++;
     else stats.credibility.verified++;
   });
@@ -30,14 +27,9 @@ export const dynamic = 'force-dynamic';
 export default async function Home(props: {
   searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-
   const searchParams = await props.searchParams || {};
   const query = typeof searchParams.q === 'string' ? searchParams.q : '';
   const category = typeof searchParams.category === 'string' ? searchParams.category : '';
-
-  // Fetch from supabase 
-  // In a robust application we would use the Next.js API route or RLS 
-  // For now using the simple browser client server-side works as a read-only fetch
 
   let supabaseQuery = supabase
     .from('articles')
@@ -46,7 +38,6 @@ export default async function Home(props: {
     .limit(50);
 
   if (query) {
-    // Search in title or content
     supabaseQuery = supabaseQuery.or(`title.ilike.%${query}%,content_summary.ilike.%${query}%`);
   }
 
@@ -64,38 +55,83 @@ export default async function Home(props: {
   const analyticsData = calculateAnalytics(safeArticles);
 
   return (
-    <main className="min-h-screen bg-slate-50 relative overflow-hidden">
+    <main className="page-bg">
+      {/* Ambient background orbs */}
+      <div className="absolute top-[-10%] left-[-5%] w-[500px] h-[500px] rounded-full opacity-20 blur-[100px] pointer-events-none"
+        style={{ background: 'radial-gradient(circle, #0891b2 0%, transparent 70%)' }} />
+      <div className="absolute top-[20%] right-[-8%] w-[400px] h-[400px] rounded-full opacity-15 blur-[100px] pointer-events-none"
+        style={{ background: 'radial-gradient(circle, #6d28d9 0%, transparent 70%)' }} />
+      <div className="absolute bottom-[10%] left-[30%] w-[350px] h-[350px] rounded-full opacity-10 blur-[100px] pointer-events-none"
+        style={{ background: 'radial-gradient(circle, #22d3ee 0%, transparent 70%)' }} />
 
-      {/* Premium aesthetic decorative blobs */}
-      <div className="absolute top-0 left-0 w-full h-96 bg-gradient-to-br from-blue-600 to-indigo-900 -skew-y-3 transform origin-top-left z-0 shadow-xl opacity-90"></div>
+      {/* Hero Header */}
+      <div className="hero-gradient relative z-10 pb-20 pt-12">
+        <div className="hero-grid" />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="flex items-start justify-between">
+            <div>
+              {/* AI badge */}
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full mb-4"
+                style={{ background: 'rgba(34,211,238,0.1)', border: '1px solid rgba(34,211,238,0.25)' }}>
+                <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
+                <span className="text-xs font-semibold text-cyan-300 tracking-widest uppercase">
+                  AI-Powered Live Feed
+                </span>
+              </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-24 relative z-10">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight mb-4">
+                <span className="text-white">AI News</span>{' '}
+                <span className="text-gradient-cyan">Aggregator</span>
+              </h1>
+              <p className="text-slate-400 text-lg max-w-xl leading-relaxed">
+                Real-time global news curated, analyzed, and verified by AI.
+                We filter the noise so you read the truth.
+              </p>
+            </div>
 
-        <header className="mb-12 text-white">
-          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-4 drop-shadow-md font-sans">
-            AI News Aggregator
-          </h1>
-          <p className="text-blue-100 text-lg max-w-2xl font-medium">
-            Real-time global news curated, analyzed, and verified by AI.
-            We filter the noise so you read the truth.
-          </p>
-        </header>
+            {/* Stats chip */}
+            <div className="hidden md:flex flex-col items-end gap-2">
+              <div className="glass px-4 py-2 flex items-center gap-2 rounded-xl">
+                <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+                <span className="text-xs text-slate-300 font-medium">
+                  {safeArticles.length} Live Articles
+                </span>
+              </div>
+              <div className="glass px-4 py-2 flex items-center gap-2 rounded-xl">
+                <span className="text-xs text-cyan-400">⚡ AI Classified</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
-        <Suspense fallback={<div className="h-20 mb-8 mt-[-3rem] z-20 relative bg-white rounded-2xl shadow-sm border border-gray-100 animate-pulse"></div>}>
-          <SearchAndFilter />
-        </Suspense>
+      {/* Content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-24 relative z-10">
+        {/* Search floats up over hero */}
+        <div className="mt-[-2.5rem] mb-8">
+          <Suspense fallback={
+            <div className="h-20 search-glass rounded-xl animate-pulse" />
+          }>
+            <SearchAndFilter />
+          </Suspense>
+        </div>
 
-        {/* Analytics Section */}
+        {/* Analytics */}
         {safeArticles.length > 0 && (
           <DashboardAnalytics data={analyticsData} />
         )}
 
-        {/* Feed Section */}
-        <div className="mt-8 relative z-20">
+        {/* Feed */}
+        <div className="mt-8">
           {safeArticles.length === 0 ? (
-            <div className="bg-white p-12 text-center rounded-2xl shadow-sm border border-gray-100">
-              <h3 className="text-xl font-medium text-gray-600 mb-2">No articles found in database</h3>
-              <p className="text-gray-400">Please run the Python backend pipeline to fetch news.</p>
+            <div className="glass p-12 text-center">
+              <div className="text-4xl mb-4">🤖</div>
+              <h3 className="text-xl font-semibold text-slate-300 mb-2">
+                No articles in database
+              </h3>
+              <p className="text-slate-500">
+                Run the Python backend pipeline to fetch and analyze news.
+              </p>
             </div>
           ) : (
             <InfiniteFeed

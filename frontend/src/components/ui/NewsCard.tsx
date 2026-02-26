@@ -28,7 +28,6 @@ export default function NewsCard({
 }: NewsCardProps) {
     const [isModalOpen, setIsModalOpen] = useState(false);
 
-    // Visual cues based on ML analysis
     const isSuspicious = is_fake || credibility_score < 0.6;
 
     const SentimentIcon =
@@ -36,109 +35,181 @@ export default function NewsCard({
             sentiment === 'negative' ? TrendingDown : Minus;
 
     const sentimentColor =
-        sentiment === 'positive' ? 'text-green-500' :
-            sentiment === 'negative' ? 'text-red-500' : 'text-gray-400';
+        sentiment === 'positive' ? '#22d3ee' :
+            sentiment === 'negative' ? '#f472b6' : '#94a3b8';
+
+    const credScore = (credibility_score * 100).toFixed(0);
 
     return (
         <>
+            {/* Card */}
             <div
                 onClick={() => setIsModalOpen(true)}
-                className={`p-5 rounded-2xl shadow-lg border backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl cursor-pointer flex flex-col h-full ${isSuspicious ? 'bg-red-50/50 border-red-200' : 'bg-white/70 border-gray-100'}`}
+                className={`news-card p-5 ${isSuspicious ? 'news-card-suspicious' : ''}`}
             >
+                {/* Top Row */}
                 <div className="flex justify-between items-start mb-3">
-                    <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">{source_domain.replace('www.', '')}</span>
-
-                    <div className="flex gap-2">
-                        {/* Sentiment Badge */}
-                        <div className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-white shadow-sm ${sentimentColor}`}>
-                            <SentimentIcon size={14} />
+                    <span className="text-xs font-semibold uppercase tracking-wider"
+                        style={{ color: 'var(--accent-cyan)', opacity: 0.7 }}>
+                        {source_domain.replace('www.', '')}
+                    </span>
+                    <div className="flex gap-1.5">
+                        {/* Sentiment badge */}
+                        <div className="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold"
+                            style={{
+                                background: `${sentimentColor}15`,
+                                border: `1px solid ${sentimentColor}30`,
+                                color: sentimentColor
+                            }}>
+                            <SentimentIcon size={11} />
+                            <span className="hidden sm:inline capitalize">{sentiment}</span>
                         </div>
-
-                        {/* Credibility Badge */}
-                        <div className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium shadow-sm ${isSuspicious ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
-                            {isSuspicious ? <ShieldAlert size={14} /> : <ShieldCheck size={14} />}
-                            <span className="hidden sm:inline">{isSuspicious ? 'Suspicious' : 'Verified'}</span>
+                        {/* Credibility badge */}
+                        <div className="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold"
+                            style={isSuspicious
+                                ? { background: 'rgba(244,63,94,0.12)', border: '1px solid rgba(244,63,94,0.3)', color: '#f87171' }
+                                : { background: 'rgba(34,211,238,0.10)', border: '1px solid rgba(34,211,238,0.3)', color: '#22d3ee' }
+                            }>
+                            {isSuspicious ? <ShieldAlert size={11} /> : <ShieldCheck size={11} />}
+                            <span className="hidden sm:inline">{isSuspicious ? 'Fake' : 'Real'}</span>
                         </div>
                     </div>
                 </div>
 
-                <h3 className="text-xl font-bold text-gray-900 mb-2 line-clamp-2">{title}</h3>
-                <p className="text-gray-600 text-sm mb-4 line-clamp-3 flex-grow">{summary}</p>
+                <h3 className="text-base font-bold text-slate-100 mb-2 line-clamp-2 leading-snug">{title}</h3>
+                <p className="text-slate-400 text-sm mb-4 line-clamp-3 flex-grow leading-relaxed">{summary}</p>
 
-                <div className="flex justify-between items-center text-xs text-gray-400 mt-auto pt-4 border-t border-gray-100/50">
-                    <span>{new Date(published_at).toLocaleDateString()}</span>
-                    <span className="font-medium text-indigo-500">Read Preview &rarr;</span>
+                {/* Score bar */}
+                <div className="mb-4">
+                    <div className="flex justify-between text-xs mb-1">
+                        <span className="text-slate-500">AI Credibility</span>
+                        <span className="font-semibold" style={{ color: isSuspicious ? '#f87171' : '#22d3ee' }}>{credScore}%</span>
+                    </div>
+                    <div className="h-1 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.05)' }}>
+                        <div
+                            className="h-full rounded-full transition-all"
+                            style={{
+                                width: `${credScore}%`,
+                                background: isSuspicious
+                                    ? 'linear-gradient(90deg, #f43f5e, #fb923c)'
+                                    : 'linear-gradient(90deg, #0891b2, #22d3ee)'
+                            }}
+                        />
+                    </div>
+                </div>
+
+                <div className="flex justify-between items-center text-xs mt-auto pt-3"
+                    style={{ borderTop: '1px solid rgba(255,255,255,0.04)' }}>
+                    <span className="text-slate-600">{new Date(published_at).toLocaleDateString()}</span>
+                    <span className="font-medium" style={{ color: 'var(--accent-cyan)' }}>
+                        Preview →
+                    </span>
                 </div>
             </div>
 
-            {/* Modal Overlay */}
+            {/* Detail Modal */}
             {isModalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-slate-900/60 backdrop-blur-sm transition-opacity" onClick={() => setIsModalOpen(false)}>
+                <div
+                    className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6"
+                    style={{ background: 'rgba(3,7,18,0.85)', backdropFilter: 'blur(12px)' }}
+                    onClick={() => setIsModalOpen(false)}
+                >
                     <div
-                        className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto relative animate-in fade-in zoom-in-95 duration-200"
+                        className="w-full max-w-2xl max-h-[90vh] overflow-y-auto relative"
+                        style={{
+                            background: 'rgba(10,20,45,0.97)',
+                            border: '1px solid rgba(34,211,238,0.18)',
+                            borderRadius: '1.25rem',
+                            boxShadow: '0 25px 80px rgba(0,0,0,0.6), 0 0 60px rgba(34,211,238,0.05)'
+                        }}
                         onClick={(e) => e.stopPropagation()}
                     >
-                        {/* Close Button */}
+                        {/* Close */}
                         <button
                             onClick={() => setIsModalOpen(false)}
-                            className="absolute top-4 right-4 p-2 bg-gray-100 hover:bg-gray-200 rounded-full text-gray-600 transition-colors z-10"
+                            className="absolute top-4 right-4 z-10 p-2 rounded-full transition-all"
+                            style={{ background: 'rgba(255,255,255,0.05)', color: '#94a3b8' }}
+                            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(244,63,94,0.15)'; (e.currentTarget as HTMLElement).style.color = '#f87171'; }}
+                            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.05)'; (e.currentTarget as HTMLElement).style.color = '#94a3b8'; }}
                         >
-                            <X size={20} />
+                            <X size={18} />
                         </button>
 
                         <div className="p-6 sm:p-8">
-                            <div className="flex items-center gap-3 mb-4">
-                                <span className="text-sm font-bold text-indigo-600 uppercase tracking-wider bg-indigo-50 px-3 py-1 rounded-full">
+                            {/* Source & date */}
+                            <div className="flex items-center gap-3 mb-5">
+                                <span className="text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full"
+                                    style={{ background: 'rgba(34,211,238,0.1)', color: 'var(--accent-cyan)', border: '1px solid rgba(34,211,238,0.2)' }}>
                                     {source_domain.replace('www.', '')}
                                 </span>
-                                <span className="text-sm text-gray-400">{new Date(published_at).toLocaleDateString()}</span>
+                                <span className="text-xs text-slate-500">
+                                    {new Date(published_at).toLocaleDateString()}
+                                </span>
                             </div>
 
-                            <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 mb-6 leading-tight">
+                            <h2 className="text-xl sm:text-2xl font-extrabold text-slate-100 mb-6 leading-snug">
                                 {title}
                             </h2>
 
-                            <div className="grid grid-cols-2 gap-4 mb-8">
-                                <div className={`p-4 rounded-2xl border ${isSuspicious ? 'bg-red-50 border-red-100' : 'bg-green-50 border-green-100'} flex flex-col items-center justify-center text-center`}>
-                                    <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">AI Credibility</span>
-                                    <div className={`flex items-center gap-2 font-bold text-lg ${isSuspicious ? 'text-red-700' : 'text-green-700'}`}>
-                                        {isSuspicious ? <ShieldAlert size={20} /> : <ShieldCheck size={20} />}
-                                        {(credibility_score * 100).toFixed(0)}% Score
+                            {/* Score grid */}
+                            <div className="grid grid-cols-2 gap-3 mb-6">
+                                {/* Credibility */}
+                                <div className="p-4 rounded-xl flex flex-col items-center text-center"
+                                    style={isSuspicious
+                                        ? { background: 'rgba(244,63,94,0.08)', border: '1px solid rgba(244,63,94,0.2)' }
+                                        : { background: 'rgba(34,211,238,0.07)', border: '1px solid rgba(34,211,238,0.2)' }
+                                    }>
+                                    <span className="text-xs text-slate-500 uppercase tracking-widest mb-2">AI Credibility</span>
+                                    <div className="flex items-center gap-1.5 font-bold text-lg"
+                                        style={{ color: isSuspicious ? '#f87171' : '#22d3ee' }}>
+                                        {isSuspicious ? <ShieldAlert size={18} /> : <ShieldCheck size={18} />}
+                                        {credScore}%
                                     </div>
-                                    <span className={`text-xs mt-1 ${isSuspicious ? 'text-red-500' : 'text-green-600'}`}>
-                                        {isSuspicious ? 'Likely Fake or Biased' : 'Highly Verified'}
+                                    <span className="text-xs mt-1" style={{ color: isSuspicious ? '#f87171' : '#22d3ee' }}>
+                                        {isSuspicious ? 'Likely Fake' : 'Verified'}
                                     </span>
                                 </div>
-                                <div className="p-4 rounded-2xl border bg-gray-50 border-gray-100 flex flex-col items-center justify-center text-center">
-                                    <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Tone Analysis</span>
-                                    <div className={`flex items-center gap-2 font-bold text-lg capitalize ${sentimentColor}`}>
-                                        <SentimentIcon size={20} />
+                                {/* Sentiment */}
+                                <div className="p-4 rounded-xl flex flex-col items-center text-center"
+                                    style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                                    <span className="text-xs text-slate-500 uppercase tracking-widest mb-2">Tone</span>
+                                    <div className="flex items-center gap-1.5 font-bold text-lg capitalize"
+                                        style={{ color: sentimentColor }}>
+                                        <SentimentIcon size={18} />
                                         {sentiment}
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="prose prose-indigo max-w-none mb-8">
-                                <p className="text-gray-700 text-lg leading-relaxed">{summary}</p>
+                            {/* Summary */}
+                            <div className="mb-6">
+                                <p className="text-slate-300 leading-relaxed">{summary}</p>
                             </div>
 
+                            {/* AI reasoning */}
                             {ai_reasoning && (
-                                <div className="mb-8 p-5 bg-indigo-50/50 rounded-2xl border border-indigo-100">
-                                    <h4 className="flex items-center gap-2 text-sm font-bold text-indigo-900 mb-2">
-                                        <SparklesIcon /> AI Logic Reasoning
+                                <div className="mb-6 p-4 rounded-xl"
+                                    style={{ background: 'rgba(109,40,217,0.08)', border: '1px solid rgba(109,40,217,0.2)' }}>
+                                    <h4 className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest mb-2"
+                                        style={{ color: 'var(--accent-violet)' }}>
+                                        <SparklesIcon />
+                                        AI Logic & Reasoning
                                     </h4>
-                                    <p className="text-indigo-800/80 text-sm leading-relaxed">
-                                        {ai_reasoning}
-                                    </p>
+                                    <p className="text-slate-300 text-sm leading-relaxed">{ai_reasoning}</p>
                                 </div>
                             )}
 
-                            <div className="flex flex-col sm:flex-row gap-4 justify-between items-center pt-6 border-t border-gray-100">
+                            {/* Footer actions */}
+                            <div className="flex flex-col sm:flex-row gap-3 justify-between items-center pt-5"
+                                style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
                                 <button
                                     onClick={() => setIsModalOpen(false)}
-                                    className="px-6 py-3 font-medium text-gray-500 hover:text-gray-800 transition-colors w-full sm:w-auto"
+                                    className="px-5 py-2.5 rounded-lg text-sm font-medium transition-all"
+                                    style={{ color: '#64748b' }}
+                                    onMouseEnter={e => (e.currentTarget.style.color = '#94a3b8')}
+                                    onMouseLeave={e => (e.currentTarget.style.color = '#64748b')}
                                 >
-                                    Close Preview
+                                    ← Close
                                 </button>
 
                                 {source_url ? (
@@ -146,12 +217,15 @@ export default function NewsCard({
                                         href={source_url}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-xl transition-all shadow-md shadow-indigo-200 active:scale-95"
+                                        className="flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl text-sm font-semibold text-white transition-all w-full sm:w-auto"
+                                        style={{ background: 'linear-gradient(135deg, #0891b2, #6d28d9)' }}
+                                        onMouseEnter={e => (e.currentTarget.style.boxShadow = '0 8px 24px rgba(8,145,178,0.3)')}
+                                        onMouseLeave={e => (e.currentTarget.style.boxShadow = 'none')}
                                     >
-                                        Read Full Story <ExternalLink size={18} />
+                                        Read Full Story <ExternalLink size={16} />
                                     </a>
                                 ) : (
-                                    <span className="text-sm text-gray-400 italic flexitems-center justify-center py-3">Source URL unavailable</span>
+                                    <span className="text-sm text-slate-600 italic">Source unavailable</span>
                                 )}
                             </div>
                         </div>
@@ -162,10 +236,10 @@ export default function NewsCard({
     );
 }
 
-// Simple spark icon for UI
 function SparklesIcon() {
     return (
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4 text-indigo-500">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-3.5 h-3.5">
             <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
             <path d="M5 3v4M3 5h4" />
         </svg>

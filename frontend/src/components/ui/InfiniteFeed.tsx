@@ -15,7 +15,6 @@ export default function InfiniteFeed({ initialArticles, searchQuery = '', catego
     const [loading, setLoading] = useState(false);
     const [hasMore, setHasMore] = useState(initialArticles.length === 50);
 
-    // Reset when filters change
     useEffect(() => {
         setArticles(initialArticles);
         setPage(1);
@@ -24,16 +23,11 @@ export default function InfiniteFeed({ initialArticles, searchQuery = '', catego
 
     const loadMore = async () => {
         if (loading || !hasMore) return;
-
         setLoading(true);
         const nextPage = page + 1;
 
         try {
-            const params = new URLSearchParams({
-                page: nextPage.toString(),
-                limit: '50',
-            });
-
+            const params = new URLSearchParams({ page: nextPage.toString(), limit: '50' });
             if (searchQuery) params.append('q', searchQuery);
             if (category && category !== 'All') params.append('category', category);
 
@@ -41,9 +35,7 @@ export default function InfiniteFeed({ initialArticles, searchQuery = '', catego
             const data = await res.json();
 
             if (data.articles) {
-                if (data.articles.length < 50) {
-                    setHasMore(false);
-                }
+                if (data.articles.length < 50) setHasMore(false);
                 setArticles(prev => [...prev, ...data.articles]);
                 setPage(nextPage);
             }
@@ -56,23 +48,31 @@ export default function InfiniteFeed({ initialArticles, searchQuery = '', catego
 
     if (articles.length === 0) {
         return (
-            <div className="bg-white p-12 text-center rounded-2xl shadow-sm border border-gray-100">
-                <h3 className="text-xl font-medium text-gray-600 mb-2">No articles found</h3>
-                <p className="text-gray-400">Try adjusting your search or category filters.</p>
+            <div className="glass p-12 text-center">
+                <div className="text-4xl mb-3">🔍</div>
+                <h3 className="text-lg font-semibold text-slate-300 mb-1">No articles found</h3>
+                <p className="text-slate-500 text-sm">Try adjusting your search or category filters.</p>
             </div>
         );
     }
 
     return (
         <>
-            <div className="flex items-center justify-between mb-8">
-                <h2 className="text-2xl font-bold mb-6 text-gray-900 border-l-4 border-indigo-600 pl-4">Latest Feed</h2>
-                <span className="text-sm font-medium bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full">
-                    {articles.length} Articles Loaded
+            {/* Header row */}
+            <div className="flex items-center justify-between mb-6">
+                <h2 className="text-lg font-bold text-slate-200 flex items-center gap-3">
+                    <span className="w-1 h-5 rounded-full inline-block"
+                        style={{ background: 'linear-gradient(180deg, #22d3ee, #6d28d9)' }} />
+                    Latest Intelligence Feed
+                </h2>
+                <span className="text-xs font-semibold px-3 py-1 rounded-full"
+                    style={{ background: 'rgba(34,211,238,0.08)', color: 'var(--accent-cyan)', border: '1px solid rgba(34,211,238,0.2)' }}>
+                    {articles.length} loaded
                 </span>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {/* Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                 {articles.map((article: any) => (
                     <NewsCard
                         key={article.id}
@@ -89,21 +89,44 @@ export default function InfiniteFeed({ initialArticles, searchQuery = '', catego
                 ))}
             </div>
 
+            {/* Load more */}
             {hasMore && (
-                <div className="mt-12 text-center">
+                <div className="mt-10 text-center">
                     <button
                         onClick={loadMore}
                         disabled={loading}
-                        className="px-8 py-3 bg-white border border-gray-200 text-gray-700 rounded-full font-medium hover:bg-gray-50 hover:text-indigo-600 hover:border-indigo-200 transition-all shadow-sm active:scale-95 disabled:opacity-50"
+                        className="inline-flex items-center gap-2 px-8 py-3 rounded-full text-sm font-semibold transition-all disabled:opacity-40"
+                        style={{
+                            background: 'rgba(34,211,238,0.08)',
+                            border: '1px solid rgba(34,211,238,0.2)',
+                            color: 'var(--accent-cyan)'
+                        }}
+                        onMouseEnter={e => {
+                            if (!loading) {
+                                (e.currentTarget as HTMLElement).style.background = 'rgba(34,211,238,0.14)';
+                                (e.currentTarget as HTMLElement).style.boxShadow = '0 0 20px rgba(34,211,238,0.15)';
+                            }
+                        }}
+                        onMouseLeave={e => {
+                            (e.currentTarget as HTMLElement).style.background = 'rgba(34,211,238,0.08)';
+                            (e.currentTarget as HTMLElement).style.boxShadow = 'none';
+                        }}
                     >
-                        {loading ? 'Loading...' : 'Load Older News'}
+                        {loading ? (
+                            <>
+                                <span className="w-3.5 h-3.5 border-2 border-cyan-400/30 border-t-cyan-400 rounded-full animate-spin" />
+                                Fetching...
+                            </>
+                        ) : (
+                            <>↓ Load Older News</>
+                        )}
                     </button>
                 </div>
             )}
 
             {!hasMore && articles.length > 0 && (
-                <div className="mt-12 text-center text-gray-400 text-sm">
-                    You've reached the end of the feed.
+                <div className="mt-10 text-center text-slate-600 text-sm">
+                    — End of feed —
                 </div>
             )}
         </>
