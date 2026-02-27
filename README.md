@@ -59,7 +59,7 @@ You need Python 3.9+ installed.
    ```
 2. Create and activate a virtual environment:
    ```bash
-   python -m venv venv
+   python -m venv venv -- First Time Only 
    
    # For Windows:
    .\venv\Scripts\activate
@@ -68,7 +68,7 @@ You need Python 3.9+ installed.
    ```
 3. Install dependencies:
    ```bash
-   pip install -r requirements.txt
+   pip install -r requirements.txt    --First Time Only
    ```
 4. Configure your environment variables. Open `.env` (or create one) in the `backend` directory:
    ```env
