@@ -131,4 +131,4 @@ npm run test
 *   **Next.js Dynamic API**: Pagination and search query string processing handled seamlessly by Next.js API Routes at `/api/articles` to allow for Infinite Feed scrolling without database overload.
 
 ## License
-MIT
+Develop By AK0121 Agency
