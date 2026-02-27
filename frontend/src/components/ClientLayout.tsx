@@ -45,6 +45,15 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
                 <div data-user={user || ''}>
                     {children}
                 </div>
+
+                {/* Copyright Footer */}
+                <footer className="w-full border-t border-white/5 bg-[#060d1f]/80 backdrop-blur-sm py-4 mt-8">
+                    <p className="text-center text-xs text-gray-500 tracking-widest uppercase">
+                        &copy; {new Date().getFullYear()}{' '}
+                        <span className="text-cyan-400 font-semibold">AK 0121 Agency</span>
+                        {' '}— All rights reserved.
+                    </p>
+                </footer>
             </div>
         </>
     );
