@@ -16,5 +16,28 @@ jobs:
       - name: Push to hub
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
-        # IMPORTANT: Replace YOUR_HF_USERNAME and YOUR_HF_SPACE_NAME with your actual Hugging Face details below!
-        run: git push --force https://Arikun12:$HF_TOKEN@huggingface.co/spaces/Arikun12/ai-news-backend main
+        run: |
+          # Go to the backend folder to push ONLY the backend
+          cd backend
+          
+          # Create the required README.md for Hugging Face Spaces
+          cat <<EOF > README.md
+          ---
+          title: AI News Backend
+          emoji: 🚀
+          colorFrom: blue
+          colorTo: indigo
+          sdk: docker
+          pinned: false
+          app_port: 7860
+          ---
+          EOF
+          
+          # Initialize a new git repo here and push it to HF Spaces
+          git init
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b main
+          git add .
+          git commit -m "Deploy to Hugging Face Spaces"
+          git push --force https://Arikun12:$HF_TOKEN@huggingface.co/spaces/Arikun12/ai-news-backend main
